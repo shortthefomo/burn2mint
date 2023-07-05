@@ -71,8 +71,11 @@ async function mintTokens(hooks_info, blob) {
         Sequence: hooks_info.account_data.Sequence
     }
 
-    // const {signedTransaction} = sign(burn2mint, master)
-    // const minted = await hooks.send(mint)
+    const {signedTransaction} = sign(mint, master)
+    const minted = await hooks.send({
+        command: 'submit',
+        tx_blob: signedTransaction
+    })
     // log('minted', minted)
 }
 
