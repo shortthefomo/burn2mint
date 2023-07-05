@@ -1,0 +1,17 @@
+{
+  "name": "burn2mint",
+  "version": "0.0.1",
+  "description": "testing burn 2 mint",
+  "scripts": {
+    "dev": "DEBUG=test* nodemon src/index.js"
+  },
+  "author": "Lathan Britz",
+  "license": "MIT",
+  "dependencies": {
+    "debug": "^4.3.4",
+    "dotenv": "^16.3.1",
+    "nodemon": "^2.0.22",
+    "xrpl-accountlib": "^2.2.0",
+    "xrpl-client": "^2.1.0"
+  }
+}
