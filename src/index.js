@@ -49,8 +49,8 @@ async function clientApp() {
     const mint = {
         Account: process.env.WALLET_ADDRESS,
         TransactionType: 'Import',
-        'Blob': "<hex encoded (upper case) XPOP>", // use the blob from previous step here
-        'Sequence': hooks_info.account_data.Sequence
+        Blob: "<hex encoded (upper case) XPOP>", // use the blob from previous step here
+        Sequence: hooks_info.account_data.Sequence
     }
     // const minted = await hooks.send(mint)
     // log('minted', minted)
