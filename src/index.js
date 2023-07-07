@@ -51,7 +51,7 @@ async function burnTokens(testnet_info) {
     const burn2mint = {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
-        Fee: '1000', // amout we are burning through to hooks side chain (assume actual fee is subtracted from value sent?)
+        Fee: '1000000', // the amout we are burning through to hooks side chain
         OperationLimit: 21338, // hooks side-chain id
         Flags: 0,
         Sequence: testnet_info.account_data.Sequence
