@@ -2,7 +2,17 @@ const debug = require('debug')
 const log = debug('test:client')
 const dotenv = require('dotenv')
 const { XrplClient } = require('xrpl-client')
-const { derive, sign } = require('xrpl-accountlib')
+
+// these definitions should be manually fetch for now, they are left in the repo for convienance, and should be dump them into customeDefinitions.json (this is discribed in the documentation)
+// curl --location --request POST 'https://hooks-testnet-v3.xrpl-labs.com' --header 'Content-Type: application/json' --data-raw '{
+//     "method": "server_definitions",
+//     "params": []
+//         }' | jq .
+const defs = require('../customDefinitions.json')
+const lib = require('xrpl-accountlib')
+const definitions = new lib.XrplDefinitions(defs)
+
+const axios = require('axios')
 
 const testnet = new XrplClient('wss://s.altnet.rippletest.net:51233')
 const hooks = new XrplClient('wss://hooks-testnet-v3.xrpl-labs.com')
@@ -21,14 +31,15 @@ async function clientApp() {
     const hooks_info = await hooks.send(account_info)
     log('hooks_info', hooks_info)
 
-    await burnTokens(testnet_info, hooks_info)
+    const hash = await burnTokens(testnet_info)
 
-    // @todo next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this blob from yet.
-    // await fetchXPOP(account)    
+    // next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this xpop from yet.
+    const xpop = await fetchXPOP(hash) 
 
-
-    // @todo final step is the mint transaction, since we are using the xumm xrpl client we will not need to update the definitions as outlined. 
-    // await mintTokens(hooks_info, blob)
+    if (xpop) {
+        // final step is the mint transaction. 
+        await mintTokens(hooks_info, xpop)
+    }
 
     // close our connections
     testnet.close()
@@ -36,47 +47,76 @@ async function clientApp() {
 }
 
 // STEP 1
-async function burnTokens(testnet_info, hooks_info) {
+async function burnTokens(testnet_info) {
     const burn2mint = {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
-        Fee: '10000000', // amout we are burning through to hooks side chain (assume actual fee is subtracted from value sent?)
+        Fee: '1000', // amout we are burning through to hooks side chain (assume actual fee is subtracted from value sent?)
         OperationLimit: 21338, // hooks side-chain id
         Flags: 0,
         Sequence: testnet_info.account_data.Sequence
     }
 
-    const master = derive.familySeed(process.env.WALLET_KEY)
-    const {signedTransaction} = sign(burn2mint, master)
+    const master = lib.derive.familySeed(process.env.WALLET_KEY)
+    const {signedTransaction} = lib.sign(burn2mint, master)
 
     const burnt = await testnet.send({
         command: 'submit',
         tx_blob: signedTransaction
     })
+    
     log('b2m', burnt)
+    return burnt.tx_json.hash
 }
 
 // STEP 2
-async function fetchXPOP(account) {
+async function fetchXPOP(hash, retry = 10) {
+    
+    log('fetching', `https://testnet.transia.co/xpop/${hash}`)
 
+    // this is just a public hooks-testnet-v3 burn node use this or setup your own burn node which is out of the 
+    // scope of this example
+    try {
+        const headers = { 'Content-Type': 'application/json; charset=utf-8' }
+        const {data} = await axios.get(`https://testnet.transia.co/xpop/${hash}`, { headers })
+        log('data', data)
+        return  Buffer.from(JSON.stringify(data), 'utf-8')
+    } catch (e) {
+        if (retry === 0) { return false }
+        await pause(5000)
+        return fetchXPOP(hash, retry - 1)
+    }
+}
+
+async function pause(milliseconds = 1000) {
+    return new Promise(resolve =>  {
+        console.log('pausing....')
+        setTimeout(resolve, milliseconds)
+    })
 }
 
 // STEP 3
-async function mintTokens(hooks_info, blob) {
-    const master = derive.familySeed(process.env.WALLET_KEY)
+async function mintTokens(hooks_info, xpop) {
+    log('hex 1', xpop.toString('hex').toUpperCase())
+    // log('hex 2', (blob).toString('hex').toUpperCase())
+    const master = lib.derive.familySeed(process.env.WALLET_KEY)
     const mint = {
-        Account: process.env.WALLET_ADDRESS,
         TransactionType: 'Import',
-        Blob: "<hex encoded (upper case) XPOP>", // use the blob from previous step here
-        Sequence: hooks_info.account_data.Sequence
+        Account: process.env.WALLET_ADDRESS,
+        Blob: xpop.toString('hex').toUpperCase(),
+        Sequence: hooks_info.account_data.Sequence,
+        Fee: '0',
+        NetworkID: 21338
     }
-
-    const {signedTransaction} = sign(mint, master)
+    log('mintmintmintmint', mint)
+    // log('definitions', definitions)
+    const {signedTransaction} = lib.sign(mint, master, definitions)
     const minted = await hooks.send({
         command: 'submit',
         tx_blob: signedTransaction
     })
-    // log('minted', minted)
+        
+    log('minted', minted)
 }
 
 log('lets transfer some XRP to HookV3Testnet via Burn2Mint')
