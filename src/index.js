@@ -86,6 +86,7 @@ async function fetchXPOP(hash, retry = 10) {
         await pause(5000)
         return fetchXPOP(hash, retry - 1)
     }
+    return false
 }
 
 async function pause(milliseconds = 1000) {
