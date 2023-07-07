@@ -97,8 +97,7 @@ async function pause(milliseconds = 1000) {
 
 // STEP 3
 async function mintTokens(hooks_info, xpop) {
-    log('hex 1', xpop.toString('hex').toUpperCase())
-    // log('hex 2', (blob).toString('hex').toUpperCase())
+    // log('XPOP HEX', xpop.toString('hex').toUpperCase())
     const master = lib.derive.familySeed(process.env.WALLET_KEY)
     const mint = {
         TransactionType: 'Import',
@@ -108,7 +107,7 @@ async function mintTokens(hooks_info, xpop) {
         Fee: '0',
         NetworkID: 21338
     }
-    log('mintmintmintmint', mint)
+    log('minting', mint)
     // log('definitions', definitions)
     const {signedTransaction} = lib.sign(mint, master, definitions)
     const minted = await hooks.send({
