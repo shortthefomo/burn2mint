@@ -82,9 +82,10 @@ async function fetchXPOP(hash, retry = 10) {
         log('data', data)
         return  Buffer.from(JSON.stringify(data), 'utf-8')
     } catch (e) {
-        if (retry === 0) { return false }
-        await pause(5000)
-        return fetchXPOP(hash, retry - 1)
+        if (retry >= 0) {
+            await pause(5000)
+            return fetchXPOP(hash, retry - 1)
+        }
     }
     return false
 }
