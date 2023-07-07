@@ -1,0 +1,1 @@
+This is an example project a get me started with the hooks-side-chain B2M process, for XRPL developers looking to intergrate with the hooks side chain.
