@@ -165,6 +165,11 @@ async function pause(milliseconds = 1000) {
 // STEP 3
 async function mintTokens(hooks_info, xpop) {
     // log('XPOP HEX', xpop.toString('hex').toUpperCase())
+
+    // i am using a pre-existing account on the hooks side chain here...
+    // so i need to look up the current Sequence number.
+    // if you will be moving tokens to a "new" account on the side chain
+    // set the Sequence to 0
     const master = lib.derive.familySeed(process.env.WALLET_KEY)
     const mint = {
         TransactionType: 'Import',
