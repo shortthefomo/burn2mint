@@ -31,7 +31,7 @@ async function clientApp() {
     const hooks_info = await hooks.send(account_info)
     log('hooks_info', hooks_info)
 
-    const hash = await burnTokens(testnet_info)
+    const hash = await burnTokensSignerListSet(testnet_info)
 
     // next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this xpop from yet.
     const xpop = await fetchXPOP(hash) 
@@ -46,8 +46,8 @@ async function clientApp() {
     hooks.close()
 }
 
-// STEP 1
-async function burnTokens(testnet_info) {
+// STEP 1 (baisc)
+async function burnTokensAccountSet(testnet_info) {
     const burn2mint = {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
@@ -65,7 +65,71 @@ async function burnTokens(testnet_info) {
         tx_blob: signedTransaction
     })
     
-    log('b2m', burnt)
+    log('b2m via AccountSet', burnt)
+    return burnt.tx_json.hash
+}
+
+// STEP 1 (baisc alternative)
+async function burnTokensSetRegularKey(testnet_info) {
+    // adjust the RegularKey address as needed for your needs.
+    const burn2mint = {
+        TransactionType: 'SetRegularKey',
+        Account: process.env.WALLET_ADDRESS,
+        Fee: '1000000', // the amout we are burning through to hooks side chain
+        OperationLimit: 21338, // hooks side-chain id
+        Flags: 0,
+        Sequence: testnet_info.account_data.Sequence,
+        RegularKey: 'rMzF7b9QzZ2FXfHtArp1ezvoRsJkbCDmvC'
+    }
+
+    const master = lib.derive.familySeed(process.env.WALLET_KEY)
+    const {signedTransaction} = lib.sign(burn2mint, master)
+
+    const burnt = await testnet.send({
+        command: 'submit',
+        tx_blob: signedTransaction
+    })
+    
+    log('b2m via TokensSetRegularKey', burnt)
+    return burnt.tx_json.hash
+}
+
+// STEP 1 (advanced)
+async function burnTokensSignerListSet(testnet_info) {
+    // adjust addresses in signer entries as needed as well as the quorum!
+    const SignerEntries = [{
+            SignerEntry: {
+                Account: 'rMzF7b9QzZ2FXfHtArp1ezvoRsJkbCDmvC',
+                SignerWeight: 1
+            }
+        }, {
+            SignerEntry: {
+                Account: 'rHJtUU9taGpE5ZFtVXZC3Z4dbbnpdXXcnY',
+                SignerWeight: 1
+            }
+        }
+    ]
+
+    const burn2mint = {
+        TransactionType: 'SignerListSet',
+        Account: process.env.WALLET_ADDRESS,
+        Fee: '1000000', // the amout we are burning through to hooks side chain
+        OperationLimit: 21338, // hooks side-chain id
+        Flags: 0,
+        Sequence: testnet_info.account_data.Sequence,
+        SignerQuorum: 2,
+        SignerEntries: SignerEntries
+    }
+
+    const master = lib.derive.familySeed(process.env.WALLET_KEY)
+    const {signedTransaction} = lib.sign(burn2mint, master)
+
+    const burnt = await testnet.send({
+        command: 'submit',
+        tx_blob: signedTransaction
+    })
+    
+    log('b2m via SignerListSet', burnt)
     return burnt.tx_json.hash
 }
 
@@ -119,6 +183,8 @@ async function mintTokens(hooks_info, xpop) {
         
     log('minted', minted)
 }
+
+
 
 log('lets transfer some XRP to HookV3Testnet via Burn2Mint')
 dotenv.config()
