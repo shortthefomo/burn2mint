@@ -31,7 +31,8 @@ async function clientApp() {
     const hooks_info = await hooks.send(account_info)
     log('hooks_info', hooks_info)
 
-    const hash = await burnTokensSignerListSet(testnet_info)
+    // can use burnTokensAccountSet(testnet_info), burnTokensSetRegularKey(testnet_info) or burnTokensSignerListSet(testnet_info) all options will burn and mint
+    const hash = await burnTokensAccountSet(testnet_info)
 
     // next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this xpop from yet.
     const xpop = await fetchXPOP(hash) 
