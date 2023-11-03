@@ -53,7 +53,7 @@ async function burnTokensAccountSet(mainnet_info) {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
         Fee: '1000000', // the amout we are burning through to hooks side chain
-        OperationLimit: 21338, // hooks side-chain id
+        OperationLimit: 21337, // Xahau network id
         Flags: 0,
         Sequence: mainnet_info.account_data.Sequence
     }
@@ -77,7 +77,7 @@ async function burnTokensSetRegularKey(mainnet_info) {
         TransactionType: 'SetRegularKey',
         Account: process.env.WALLET_ADDRESS,
         Fee: '1000000', // the amout we are burning through to hooks side chain
-        OperationLimit: 21338, // hooks side-chain id
+        OperationLimit: 21337, // Xahau network id
         Flags: 0,
         Sequence: mainnet_info.account_data.Sequence,
         RegularKey: 'rMzF7b9QzZ2FXfHtArp1ezvoRsJkbCDmvC'
@@ -115,7 +115,7 @@ async function burnTokensSignerListSet(mainnet_info) {
         TransactionType: 'SignerListSet',
         Account: process.env.WALLET_ADDRESS,
         Fee: '1000000', // the amout we are burning through to hooks side chain
-        OperationLimit: 21338, // hooks side-chain id
+        OperationLimit: 21337, // Xahau network id
         Flags: 0,
         Sequence: mainnet_info.account_data.Sequence,
         SignerQuorum: 2,
@@ -177,7 +177,7 @@ async function mintTokens(xahau_info, xpop) {
         Blob: xpop.toString('hex').toUpperCase(),
         Sequence: xahau_info.account_data.Sequence,
         Fee: '0',
-        NetworkID: 21338
+        NetworkID: 21337 // Xahau network id
     }
     log('minting', mint)
     // log('definitions', definitions)
