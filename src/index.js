@@ -198,6 +198,6 @@ async function mintTokens(xahau_info, xpop) {
 
 
 
-log('lets transfer some XRP to HookV3Testnet via Burn2Mint')
+log('lets Burn some XRP on Mainnet to Xahau via Burn2Mint')
 dotenv.config()
 clientApp()
