@@ -38,10 +38,10 @@ async function clientApp() {
     }
 
     // can use burnTokensAccountSet(mainnet_info), burnTokensSetRegularKey(mainnet_info) or burnTokensSignerListSet(mainnet_info) all options will burn and mint
-    // const hash = await burnTokensAccountSet(mainnet_info)
+    const hash = await burnTokensAccountSet(mainnet_info)
 
     // next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this xpop from yet.
-    const xpop = await fetchXPOP('24F443FEAE664340E3AA63828DF6173F00ACE8D7282823828D0AA1107BF50FC2') //hash) 
+    const xpop = await fetchXPOP(hash) 
 
     if (xpop) {
         // final step is the mint transaction. 
