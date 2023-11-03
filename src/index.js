@@ -27,9 +27,15 @@ async function clientApp() {
     }
     const mainnet_info = await mainnet.send(account_info)
     log('mainnet_info', mainnet_info)
+    if ('error' in mainnet_info) {
+        process.exit()    
+    }
 
     const xahau_info = await xahau.send(account_info)
     log('xahau_info', xahau_info)
+    if ('error' in xahau_info) {
+        process.exit()    
+    }
 
     // can use burnTokensAccountSet(mainnet_info), burnTokensSetRegularKey(mainnet_info) or burnTokensSignerListSet(mainnet_info) all options will burn and mint
     const hash = await burnTokensAccountSet(mainnet_info)
