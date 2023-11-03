@@ -52,7 +52,7 @@ async function burnTokensAccountSet(testnet_info) {
     const burn2mint = {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
-        Fee: '1000000', // the amout we are burning through to hooks side chain
+        Fee: '22000000', // the amout we are burning through to hooks side chain
         OperationLimit: 21338, // hooks side-chain id
         Flags: 0,
         Sequence: testnet_info.account_data.Sequence
@@ -137,13 +137,13 @@ async function burnTokensSignerListSet(testnet_info) {
 // STEP 2
 async function fetchXPOP(hash, retry = 10) {
     
-    log('fetching', `https://testnet.transia.co/xpop/${hash}`)
+    log('fetching', `https://xpop.panicbot.xyz/xpop/${hash}`)
 
     // this is just a public hooks-testnet-v3 burn node use this or setup your own burn node which is out of the 
     // scope of this example
     try {
         const headers = { 'Content-Type': 'application/json; charset=utf-8' }
-        const {data} = await axios.get(`https://testnet.transia.co/xpop/${hash}`, { headers })
+        const {data} = await axios.get(`https://xpop.panicbot.xyz/xpop/${hash}`, { headers })
         log('data', data)
         return  Buffer.from(JSON.stringify(data), 'utf-8')
     } catch (e) {
