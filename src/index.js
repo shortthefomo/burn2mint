@@ -27,10 +27,16 @@ async function clientApp() {
     }
     const testnet_info = await testnet.send(account_info)
     log('testnet_info', testnet_info)
+    if ('error' in testnet_info) {
+        process.exit()    
+    }
 
     const hooks_info = await hooks.send(account_info)
     log('hooks_info', hooks_info)
-
+    if ('error' in hooks_info) {
+        process.exit()    
+    }
+    
     // can use burnTokensAccountSet(testnet_info), burnTokensSetRegularKey(testnet_info) or burnTokensSignerListSet(testnet_info) all options will burn and mint
     const hash = await burnTokensAccountSet(testnet_info)
 
