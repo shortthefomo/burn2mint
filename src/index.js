@@ -38,10 +38,10 @@ async function clientApp() {
     }
 
     // can use burnTokensAccountSet(mainnet_info), burnTokensSetRegularKey(mainnet_info) or burnTokensSignerListSet(mainnet_info) all options will burn and mint
-    const hash = await burnTokensAccountSet(mainnet_info)
+    // const hash = await burnTokensAccountSet(mainnet_info)
 
     // next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this xpop from yet.
-    const xpop = await fetchXPOP(hash) 
+    const xpop = await fetchXPOP('24F443FEAE664340E3AA63828DF6173F00ACE8D7282823828D0AA1107BF50FC2') //hash) 
 
     if (xpop) {
         // final step is the mint transaction. 
@@ -58,7 +58,7 @@ async function burnTokensAccountSet(mainnet_info) {
     const burn2mint = {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
-        Fee: '1000000', // the amout we are burning through to hooks side chain
+        Fee: '4000000', // the amout we are burning through to hooks side chain
         OperationLimit: 21337, // Xahau network id
         Flags: 0,
         Sequence: mainnet_info.account_data.Sequence
@@ -148,10 +148,10 @@ async function fetchXPOP(hash, retry = 10) {
     // this is just a public hooks-testnet-v3 burn node use this or setup your own burn node which is out of the 
     // scope of this example
     try {
-        const headers = { 'Content-Type': 'application/json; charset=utf-8' }
+        const headers = { 'Content-Type': 'application/json; charset=utf-8', Accept: 'application/json' }
         const {data} = await axios.get(`https://xpop.panicbot.xyz/xpop/${hash}`, { headers })
         log('data', data)
-        return  Buffer.from(JSON.stringify(data), 'utf-8')
+        return  JSON.stringify(data).replace(/['"]+/g, '')
     } catch (e) {
         if (retry > 0) {
             await pause(5000)
@@ -176,17 +176,18 @@ async function mintTokens(xahau_info, xpop) {
     // so i need to look up the current Sequence number.
     // if you will be moving tokens to a "new" account on the side chain
     // set the Sequence to 0
+   
     const master = lib.derive.familySeed(process.env.WALLET_KEY)
     const mint = {
         TransactionType: 'Import',
         Account: process.env.WALLET_ADDRESS,
-        Blob: xpop.toString('hex').toUpperCase(),
+        Blob: xpop.toUpperCase(),
         Sequence: xahau_info.account_data.Sequence,
-        Fee: '0',
+        Fee: '100',
         NetworkID: 21337 // Xahau network id
     }
     log('minting', mint)
-    // log('definitions', definitions)
+    log('definitions', definitions)
     const {signedTransaction} = lib.sign(mint, master, definitions)
     const minted = await xahau.send({
         command: 'submit',
@@ -194,7 +195,6 @@ async function mintTokens(xahau_info, xpop) {
     })
         
     log('minted', minted)
-}
 
 
 

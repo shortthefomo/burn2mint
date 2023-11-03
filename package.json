@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "testing burn 2 mint",
   "scripts": {
-    "dev": "DEBUG=test* nodemon src/index.js"
+    "dev": "DEBUG=test* node src/index.js"
   },
   "author": "Lathan Britz",
   "license": "MIT",
