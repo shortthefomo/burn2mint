@@ -14,8 +14,8 @@ const definitions = new lib.XrplDefinitions(defs)
 
 const axios = require('axios')
 
-const testnet = new XrplClient('wss://s.altnet.rippletest.net:51233')
-const hooks = new XrplClient('wss://hooks-testnet-v3.xrpl-labs.com')
+const mainnet = new XrplClient(['wss://node.panicbot.xyz', 'wss://node2.panicbot.xyz'])
+const xahau = new XrplClient('wss://xahau.network')
 
 // https://docs.hooks.network/testnet-v3/burn-2-mint discribes the steps needed to burn2mint
 
@@ -25,43 +25,43 @@ async function clientApp() {
         account: process.env.WALLET_ADDRESS,
         ledger_index: 'current'
     }
-    const testnet_info = await testnet.send(account_info)
-    log('testnet_info', testnet_info)
+    const mainnet_info = await mainnet.send(account_info)
+    log('mainnet_info', mainnet_info)
 
-    const hooks_info = await hooks.send(account_info)
-    log('hooks_info', hooks_info)
+    const xahau_info = await xahau.send(account_info)
+    log('xahau_info', xahau_info)
 
-    // can use burnTokensAccountSet(testnet_info), burnTokensSetRegularKey(testnet_info) or burnTokensSignerListSet(testnet_info) all options will burn and mint
-    const hash = await burnTokensAccountSet(testnet_info)
+    // can use burnTokensAccountSet(mainnet_info), burnTokensSetRegularKey(mainnet_info) or burnTokensSignerListSet(mainnet_info) all options will burn and mint
+    const hash = await burnTokensAccountSet(mainnet_info)
 
     // next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this xpop from yet.
     const xpop = await fetchXPOP(hash) 
 
     if (xpop) {
         // final step is the mint transaction. 
-        await mintTokens(hooks_info, xpop)
+        await mintTokens(xahau_info, xpop)
     }
 
     // close our connections
-    testnet.close()
-    hooks.close()
+    mainnet.close()
+    xahau.close()
 }
 
 // STEP 1 (baisc)
-async function burnTokensAccountSet(testnet_info) {
+async function burnTokensAccountSet(mainnet_info) {
     const burn2mint = {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
         Fee: '1000000', // the amout we are burning through to hooks side chain
         OperationLimit: 21338, // hooks side-chain id
         Flags: 0,
-        Sequence: testnet_info.account_data.Sequence
+        Sequence: mainnet_info.account_data.Sequence
     }
 
     const master = lib.derive.familySeed(process.env.WALLET_KEY)
     const {signedTransaction} = lib.sign(burn2mint, master)
 
-    const burnt = await testnet.send({
+    const burnt = await mainnet.send({
         command: 'submit',
         tx_blob: signedTransaction
     })
@@ -71,7 +71,7 @@ async function burnTokensAccountSet(testnet_info) {
 }
 
 // STEP 1 (baisc alternative)
-async function burnTokensSetRegularKey(testnet_info) {
+async function burnTokensSetRegularKey(mainnet_info) {
     // adjust the RegularKey address as needed for your needs.
     const burn2mint = {
         TransactionType: 'SetRegularKey',
@@ -79,14 +79,14 @@ async function burnTokensSetRegularKey(testnet_info) {
         Fee: '1000000', // the amout we are burning through to hooks side chain
         OperationLimit: 21338, // hooks side-chain id
         Flags: 0,
-        Sequence: testnet_info.account_data.Sequence,
+        Sequence: mainnet_info.account_data.Sequence,
         RegularKey: 'rMzF7b9QzZ2FXfHtArp1ezvoRsJkbCDmvC'
     }
 
     const master = lib.derive.familySeed(process.env.WALLET_KEY)
     const {signedTransaction} = lib.sign(burn2mint, master)
 
-    const burnt = await testnet.send({
+    const burnt = await mainnet.send({
         command: 'submit',
         tx_blob: signedTransaction
     })
@@ -96,7 +96,7 @@ async function burnTokensSetRegularKey(testnet_info) {
 }
 
 // STEP 1 (advanced)
-async function burnTokensSignerListSet(testnet_info) {
+async function burnTokensSignerListSet(mainnet_info) {
     // adjust addresses in signer entries as needed as well as the quorum!
     const SignerEntries = [{
             SignerEntry: {
@@ -117,7 +117,7 @@ async function burnTokensSignerListSet(testnet_info) {
         Fee: '1000000', // the amout we are burning through to hooks side chain
         OperationLimit: 21338, // hooks side-chain id
         Flags: 0,
-        Sequence: testnet_info.account_data.Sequence,
+        Sequence: mainnet_info.account_data.Sequence,
         SignerQuorum: 2,
         SignerEntries: SignerEntries
     }
@@ -125,7 +125,7 @@ async function burnTokensSignerListSet(testnet_info) {
     const master = lib.derive.familySeed(process.env.WALLET_KEY)
     const {signedTransaction} = lib.sign(burn2mint, master)
 
-    const burnt = await testnet.send({
+    const burnt = await mainnet.send({
         command: 'submit',
         tx_blob: signedTransaction
     })
@@ -137,13 +137,13 @@ async function burnTokensSignerListSet(testnet_info) {
 // STEP 2
 async function fetchXPOP(hash, retry = 10) {
     
-    log('fetching', `https://testnet.transia.co/xpop/${hash}`)
+    log('fetching', `https://xpop.panicbot.xyz/xpop/${hash}`)
 
     // this is just a public hooks-testnet-v3 burn node use this or setup your own burn node which is out of the 
     // scope of this example
     try {
         const headers = { 'Content-Type': 'application/json; charset=utf-8' }
-        const {data} = await axios.get(`https://testnet.transia.co/xpop/${hash}`, { headers })
+        const {data} = await axios.get(`https://xpop.panicbot.xyz/xpop/${hash}`, { headers })
         log('data', data)
         return  Buffer.from(JSON.stringify(data), 'utf-8')
     } catch (e) {
@@ -163,7 +163,7 @@ async function pause(milliseconds = 1000) {
 }
 
 // STEP 3
-async function mintTokens(hooks_info, xpop) {
+async function mintTokens(xahau_info, xpop) {
     // log('XPOP HEX', xpop.toString('hex').toUpperCase())
 
     // i am using a pre-existing account on the hooks side chain here...
@@ -175,14 +175,14 @@ async function mintTokens(hooks_info, xpop) {
         TransactionType: 'Import',
         Account: process.env.WALLET_ADDRESS,
         Blob: xpop.toString('hex').toUpperCase(),
-        Sequence: hooks_info.account_data.Sequence,
+        Sequence: xahau_info.account_data.Sequence,
         Fee: '0',
         NetworkID: 21338
     }
     log('minting', mint)
     // log('definitions', definitions)
     const {signedTransaction} = lib.sign(mint, master, definitions)
-    const minted = await hooks.send({
+    const minted = await xahau.send({
         command: 'submit',
         tx_blob: signedTransaction
     })
