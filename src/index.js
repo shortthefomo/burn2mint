@@ -19,11 +19,12 @@ const xahau = new XrplClient('wss://xahau.network')
 
 const endpoints =[
     'https://xpop.panicbot.xyz',
-    'https://xpop.xrplwin.com/',
+    'https://xpop.xrplwin.com',
     'http://xpop.katczynski.org',
     'https://xpop.xrpl-labs.com',
+    'https://xpop.noledger.net',
     'https://xpop.zerp.network',
-    'https://xahau.xrplwin.com',
+    'https://xpop.store'
 ]
 // https://docs.hooks.network/testnet-v3/burn-2-mint discribes the steps needed to burn2mint
 
