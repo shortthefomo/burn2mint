@@ -204,7 +204,7 @@ async function mintTokens(xahau_info, xpop) {
     })
         
     log('minted', minted)
-
+}
 
 
 log('lets Burn some XRP on Mainnet to Xahau via Burn2Mint')
