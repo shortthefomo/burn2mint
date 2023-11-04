@@ -164,7 +164,7 @@ async function fetchXPOP(hash, retry = 10, paused = 1000) {
             const headers = { 'Content-Type': 'application/json; charset=utf-8' }
             const {data} = await axios.get(`${endpoints[index]}/xpop/${hash}`, { headers })
             log('data', data)
-            return  Buffer.from(JSON.stringify(data), 'utf-8')
+            return JSON.stringify(data).replace(/['"]+/g, '')
         } catch (e) {
             // do nothing
         }
@@ -196,9 +196,9 @@ async function mintTokens(hooks_info, xpop_data) {
     const mint = {
         TransactionType: 'Import',
         Account: process.env.WALLET_ADDRESS,
-        Blob: xpop_data.toString('hex').toUpperCase(),
+        Blob: xpop_data.toUpperCase(),
         Sequence: hooks_info.account_data.Sequence,
-        Fee: '0',
+        Fee: '100',
         NetworkID: 21338
     }
     log('minting', mint)
