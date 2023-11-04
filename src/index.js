@@ -204,6 +204,12 @@ async function mintTokens(xahau_info, xpop) {
     })
         
     log('minted', minted)
+    if (minted.engine_result === 'tesSUCCESS') {
+        log('B2M tesSUCCESS')
+    }
+    else {
+        log('B2M ' + minted.engine_result)
+    }
 }
 
 
