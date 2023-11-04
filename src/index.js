@@ -70,7 +70,7 @@ async function burnTokensAccountSet(testnet_info) {
     const burn2mint = {
         TransactionType: 'AccountSet',
         Account: process.env.WALLET_ADDRESS,
-        Fee: '22000000', // the amout we are burning through to hooks side chain
+        Fee: '2000000', // the amout we are burning through to hooks side chain
         OperationLimit: 21338, // hooks side-chain id
         Flags: 0,
         Sequence: testnet_info.account_data.Sequence
@@ -210,6 +210,12 @@ async function mintTokens(hooks_info, xpop_data) {
     })
         
     log('minted', minted)
+    if (minted.engine_result === 'tesSUCCESS') {
+        log('B2M tesSUCCESS')
+    }
+    else {
+        log('B2M ' + minted.engine_result)
+    }
 }
 
 
