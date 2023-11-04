@@ -141,22 +141,22 @@ async function burnTokensSignerListSet(mainnet_info) {
 }
 
 // STEP 2
-async function fetchXPOP(hash, retry = 10) {
-    
-    log('fetching', `https://xpop.panicbot.xyz/xpop/${hash}`)
-
-    // this is just a public hooks-testnet-v3 burn node use this or setup your own burn node which is out of the 
-    // scope of this example
-    try {
-        const headers = { 'Content-Type': 'application/json; charset=utf-8', Accept: 'application/json' }
-        const {data} = await axios.get(`https://xpop.panicbot.xyz/xpop/${hash}`, { headers })
-        log('data', data)
-        return  JSON.stringify(data).replace(/['"]+/g, '')
-    } catch (e) {
-        if (retry > 0) {
-            await pause(5000)
-            return fetchXPOP(hash, retry - 1)
+async function fetchXPOP(hash, retry = 10, paused = 2000) {
+    for (let index = 0; index < endpoints.length; index++) {
+        try {
+            log('searching for xpop', `${endpoints[index]}/xpop/${hash}`)
+            const headers = { 'Content-Type': 'application/json; charset=utf-8' }
+            const {data} = await axios.get(`${endpoints[index]}/xpop/${hash}`, { headers })
+            log('data', data)
+            return  JSON.stringify(data).replace(/['"]+/g, '')
+        } catch (e) {
+            // do nothing
         }
+    }
+
+    if (retry > 0) {
+        await pause(paused)
+        return fetchXPOP(hash, retry - 1)
     }
     return false
 }
