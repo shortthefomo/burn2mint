@@ -17,6 +17,15 @@ const axios = require('axios')
 const testnet = new XrplClient('wss://s.altnet.rippletest.net:51233')
 const hooks = new XrplClient('wss://hooks-testnet-v3.xrpl-labs.com')
 
+const endpoints =[
+        'https://xpop.panicbot.xyz',
+        'https://xpop.xrplwin.com/',
+        'http://xpop.katczynski.org',
+        'https://xpop.xrpl-labs.com',
+        'https://xpop.zerp.network',
+        'https://xahau.xrplwin.com',
+    ]
+
 // https://docs.hooks.network/testnet-v3/burn-2-mint discribes the steps needed to burn2mint
 
 async function clientApp() {
@@ -41,11 +50,13 @@ async function clientApp() {
     const hash = await burnTokensAccountSet(testnet_info)
 
     // next up is fetching the XPOP from a burn node, there is no disrciption to run a node yet... or any avilable nodes to fetch this xpop from yet.
-    const xpop = await fetchXPOP(hash) 
+    const xpop_data = await fetchXPOP(hash) 
+    
+    log('xpop_data')
 
-    if (xpop) {
+    if (xpop_data) {
         // final step is the mint transaction. 
-        await mintTokens(hooks_info, xpop)
+        await mintTokens(hooks_info, xpop_data)
     }
 
     // close our connections
@@ -141,22 +152,22 @@ async function burnTokensSignerListSet(testnet_info) {
 }
 
 // STEP 2
-async function fetchXPOP(hash, retry = 10) {
-    
-    log('fetching', `https://xpop.panicbot.xyz/xpop/${hash}`)
-
-    // this is just a public hooks-testnet-v3 burn node use this or setup your own burn node which is out of the 
-    // scope of this example
-    try {
-        const headers = { 'Content-Type': 'application/json; charset=utf-8' }
-        const {data} = await axios.get(`https://xpop.panicbot.xyz/xpop/${hash}`, { headers })
-        log('data', data)
-        return  Buffer.from(JSON.stringify(data), 'utf-8')
-    } catch (e) {
-        if (retry > 0) {
-            await pause(5000)
-            return fetchXPOP(hash, retry - 1)
+async function fetchXPOP(hash, retry = 10, paused = 1000) {
+    for (let index = 0; index < endpoints.length; index++) {
+        try {
+            log('searching for xpop', `${endpoints[index]}/xpop/${hash}`)
+            const headers = { 'Content-Type': 'application/json; charset=utf-8' }
+            const {data} = await axios.get(`${endpoints[index]}/xpop/${hash}`, { headers })
+            log('data', data)
+            return  Buffer.from(JSON.stringify(data), 'utf-8')
+        } catch (e) {
+            // do nothing
         }
+    }
+
+    if (retry > 0) {
+        await pause(paused)
+        return fetchXPOP(hash, retry - 1)
     }
     return false
 }
@@ -169,7 +180,7 @@ async function pause(milliseconds = 1000) {
 }
 
 // STEP 3
-async function mintTokens(hooks_info, xpop) {
+async function mintTokens(hooks_info, xpop_data) {
     // log('XPOP HEX', xpop.toString('hex').toUpperCase())
 
     // i am using a pre-existing account on the hooks side chain here...
@@ -180,7 +191,7 @@ async function mintTokens(hooks_info, xpop) {
     const mint = {
         TransactionType: 'Import',
         Account: process.env.WALLET_ADDRESS,
-        Blob: xpop.toString('hex').toUpperCase(),
+        Blob: xpop_data.toString('hex').toUpperCase(),
         Sequence: hooks_info.account_data.Sequence,
         Fee: '0',
         NetworkID: 21338
