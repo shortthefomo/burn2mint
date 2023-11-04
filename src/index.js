@@ -17,6 +17,14 @@ const axios = require('axios')
 const mainnet = new XrplClient(['wss://node.panicbot.xyz', 'wss://node2.panicbot.xyz'])
 const xahau = new XrplClient('wss://xahau.network')
 
+const endpoints =[
+    'https://xpop.panicbot.xyz',
+    'https://xpop.xrplwin.com/',
+    'http://xpop.katczynski.org',
+    'https://xpop.xrpl-labs.com',
+    'https://xpop.zerp.network',
+    'https://xahau.xrplwin.com',
+]
 // https://docs.hooks.network/testnet-v3/burn-2-mint discribes the steps needed to burn2mint
 
 async function clientApp() {
