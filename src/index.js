@@ -17,14 +17,15 @@ const axios = require('axios')
 const testnet = new XrplClient('wss://s.altnet.rippletest.net:51233')
 const hooks = new XrplClient('wss://hooks-testnet-v3.xrpl-labs.com')
 
-const endpoints =[
-        'https://xpop.panicbot.xyz',
-        'https://xpop.xrplwin.com/',
-        'http://xpop.katczynski.org',
-        'https://xpop.xrpl-labs.com',
-        'https://xpop.zerp.network',
-        'https://xahau.xrplwin.com',
-    ]
+const endpoints = [
+    'https://xpop.panicbot.xyz',
+    'https://xpop.xrplwin.com',
+    'http://xpop.katczynski.org',
+    'https://xpop.xrpl-labs.com',
+    'https://xpop.noledger.net',
+    'https://xpop.zerp.network',
+    'https://xpop.store'
+]
 
 // https://docs.hooks.network/testnet-v3/burn-2-mint discribes the steps needed to burn2mint
 
@@ -84,6 +85,10 @@ async function burnTokensAccountSet(testnet_info) {
     })
     
     log('b2m via AccountSet', burnt)
+    if (burnt.engine_result !== 'tesSUCCESS') {
+        process.exit()
+    }
+    
     return burnt.tx_json.hash
 }
 
