@@ -95,7 +95,7 @@ async function burnTokensSetRegularKey(mainnet_info) {
         OperationLimit: 21337, // Xahau network id
         Flags: 0,
         Sequence: mainnet_info.account_data.Sequence,
-        RegularKey: 'rMzF7b9QzZ2FXfHtArp1ezvoRsJkbCDmvC'
+        RegularKey: process.env.REGULAR_KEY
     }
 
     const master = lib.derive.familySeed(process.env.WALLET_KEY)
@@ -115,12 +115,12 @@ async function burnTokensSignerListSet(mainnet_info) {
     // adjust addresses in signer entries as needed as well as the quorum!
     const SignerEntries = [{
             SignerEntry: {
-                Account: 'rMzF7b9QzZ2FXfHtArp1ezvoRsJkbCDmvC',
+                Account: process.env.SIGNER_ENTRY_1,
                 SignerWeight: 1
             }
         }, {
             SignerEntry: {
-                Account: 'rHJtUU9taGpE5ZFtVXZC3Z4dbbnpdXXcnY',
+                Account: process.env.SIGNER_ENTRY_2,
                 SignerWeight: 1
             }
         }
