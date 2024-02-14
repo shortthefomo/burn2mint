@@ -18,7 +18,6 @@ const testnet = new XrplClient('wss://s.altnet.rippletest.net:51233')
 const hooks = new XrplClient('wss://hooks-testnet-v3.xrpl-labs.com')
 
 const endpoints = [
-    'https://xpop.panicbot.xyz',
     'https://xpop.xrplwin.com',
     'http://xpop.katczynski.org',
     'https://xpop.xrpl-labs.com',
